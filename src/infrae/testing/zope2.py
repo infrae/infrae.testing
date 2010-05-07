@@ -23,7 +23,7 @@ import Products
 import ZODB
 import transaction
 
-from silva.testing.layers import ZCMLLayer
+from infrae.testing.layers import ZCMLLayer
 
 import os
 
