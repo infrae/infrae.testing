@@ -146,6 +146,11 @@ class Zope2Layer(ZCMLLayer):
         self.packages = list(self.default_packages)
         if packages is not None:
             self.packages.extend(packages)
+        tested_module = self.__module__
+        if tested_module.startswith('Products.'):
+            self.products.append(tested_module[9:])
+        else:
+            self.packages.append(tested_module)
         self.users = self.default_users.copy()
         if users is not None:
             self.users.update(users)
