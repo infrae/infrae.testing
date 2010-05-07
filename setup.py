@@ -3,7 +3,7 @@ import os
 
 version = '1.0dev'
 
-setup(name='silva.testing',
+setup(name='infrae.testing',
       version=version,
       description="Define some sane tests layers",
       long_description=open("README.txt").read() + "\n" +
@@ -21,7 +21,7 @@ setup(name='silva.testing',
       license='BSD',
       package_dir={'': 'src'},
       packages=find_packages('src', exclude=['ez_setup']),
-      namespace_packages=['silva',],
+      namespace_packages=['infrae',],
       include_package_data=True,
       zip_safe=False,
       install_requires=[
