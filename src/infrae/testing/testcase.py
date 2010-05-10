@@ -3,9 +3,53 @@
 # $Id$
 
 from Acquisition import aq_base
+from zope.configuration.name import resolve
 
+import os
 import hashlib
 import unittest
+import doctest
+
+
+TEST_FACTORIES = {
+    '.txt': doctest.DocFileSuite,
+    '.py': doctest.DocTestSuite,}
+
+
+def suite_from_package(package_name, factory):
+    """This method looks files in a directory of a package_name and
+    create test suite with files contained in it.
+    """
+    suite = unittest.TestSuite()
+
+    try:
+        python_package = resolve(package_name)
+    except ImportError:
+        raise ValueError("Could not import package %s" % package_name)
+
+    testing_path = os.path.dirname(python_package.__file__)
+    for filename in os.listdir(testing_path):
+        name, extension = os.path.splitext(filename)
+        if extension not in TEST_FACTORIES.keys():
+            continue
+        if name.endswith('_fixture') or name == '__init__':
+            continue
+
+        doc_suite_factory = TEST_FACTORIES[extension]
+        default_doc_suite_options = {}
+        if doc_suite_factory is doctest.DocFileSuite:
+            test_name = os.path.join(testing_path, filename)
+            default_doc_suite_options['module_relative'] = False
+        else:
+            test_name = '.'.join((package_name, name))
+
+        def build_doc_suite(*files, **options):
+            options.update(default_doc_suite_options)
+            return doc_suite_factory(*files, **options)
+
+        test = factory(build_doc_suite, test_name)
+        suite.addTest(test)
+    return suite
 
 
 class TestCase(unittest.TestCase):

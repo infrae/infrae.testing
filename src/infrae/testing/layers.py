@@ -9,6 +9,7 @@ from zope.testing.cleanup import cleanUp
 from zope.component import provideHandler
 from zope.site.hooks import setHooks
 from zope.component.eventtesting import events, clearEvents
+from grokcore.component import zcml
 
 
 class LayerBase(object):
@@ -59,6 +60,13 @@ class ZCMLLayer(LayerBase):
         xmlconfig.registerCommonDirectives(context)
         self.context = self._load_zcml(context)
         provideHandler(events.append, (None,))
+
+    def grok(self, module_name):
+        try:
+            zcml.do_grok(module_name, self.context)
+            self.context.execute_actions(testing=True)
+        finally:
+            del self.context.actions[:]
 
     def testTearDown(self):
         clearEvents()
