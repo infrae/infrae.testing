@@ -89,7 +89,7 @@ class TestAppInitializer(AppInitializer):
         app = self.getApp()
         uf = app.acl_users
         for username, roles in self.users.items():
-            uf._doAddUser(username, '', roles, [])
+            uf._doAddUser(username, username, roles, [])
 
     def install_products(self):
         app = self.getApp()
@@ -174,10 +174,10 @@ class Zope2Layer(ZCMLLayer):
                     self.__module__, self.__name__.lower()))
             if os.path.exists(filename):
                 self._db = new_database(
-                    storage=FileStorage(filename))
+                    storage = FileStorage(filename))
             else:
                 self._db = new_database(
-                    storage=FileStorage(filename, create=True))
+                    storage = FileStorage(filename, create=True))
                 self._install_zope(self._db)
         else:
             # Create a in memory database
