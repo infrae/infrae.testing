@@ -36,4 +36,9 @@ setup(name='infrae.testing',
         'zope.site',
         'zope.testing',
         ],
+      entry_points = {
+        'console_scripts': [
+            'xmlindent = infrae.testing.xmlindent:xmlindent',
+            ]
+        }
       )

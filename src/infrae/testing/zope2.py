@@ -235,3 +235,13 @@ class Zope2Layer(ZCMLLayer):
     def get_application(self):
         return makerequest(self.get_root_folder())
 
+    def login(self, username):
+        user_folder = self.get_root_folder().acl_users
+        user = user_folder.getUserById(username)
+        if user is None:
+            raise ValueError("No user %s available" % username)
+        newSecurityManager(None, user.__of__(user_folder))
+
+    def logout(self):
+        noSecurityManager()
+
