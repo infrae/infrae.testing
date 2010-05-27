@@ -103,8 +103,8 @@ class TestCase(unittest.TestCase):
         You should not use this if you which to compare XML data where
         spaces does matter.
         """
-        pretty_xml1 = BeautifulSoup(xml1).prettify()
-        pretty_xml2 = BeautifulSoup(xml2).prettify()
+        pretty_xml1 = BeautifulSoup(xml1.strip()).prettify()
+        pretty_xml2 = BeautifulSoup(xml2.strip()).prettify()
         if pretty_xml1 != pretty_xml2:
             diff = ['XML differ:\n-expected\n+actual\n',] + \
                 list(difflib.unified_diff(
