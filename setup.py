@@ -26,6 +26,7 @@ setup(name='infrae.testing',
       zip_safe=False,
       install_requires=[
         'Zope2',
+        'BeautifulSoup',
         'grokcore.component',
         'setuptools',
         'zope.component',

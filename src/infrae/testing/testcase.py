@@ -2,13 +2,15 @@
 # See also LICENSE.txt
 # $Id$
 
-from Acquisition import aq_base
-from zope.configuration.name import resolve
-
 import os
 import hashlib
 import unittest
 import doctest
+import difflib
+
+from Acquisition import aq_base
+from BeautifulSoup import BeautifulSoup
+from zope.configuration.name import resolve
 
 
 TEST_FACTORIES = {
@@ -73,7 +75,7 @@ class TestCase(unittest.TestCase):
         if msg is None:
             msg = u'%r is not %r' % (first, second)
         if aq_base(first) is not aq_base(second):
-            raise self.failureException, msg
+            raise self.failureException(msg)
 
     def assertStringEqual(self, first, second, msg=None):
         """Assert two string are equals ignore extra white spaces
@@ -92,4 +94,20 @@ class TestCase(unittest.TestCase):
         if msg is None:
             msg = u'%r != %s' % (sorted_first, sorted_second)
         if not sorted_first == sorted_second:
-            raise self.failureException, msg
+            raise self.failureException(msg)
+
+    def assertXMLEqual(self, xml1, xml2):
+        """Assert that two XML content are the same, or fail with a
+        comprehensive diff between them.
+
+        You should not use this if you which to compare XML data where
+        spaces does matter.
+        """
+        pretty_xml1 = BeautifulSoup(xml1).prettify()
+        pretty_xml2 = BeautifulSoup(xml2).prettify()
+        if pretty_xml1 != pretty_xml2:
+            diff = ['XML differ:\n-expected\n+actual\n',] + \
+                list(difflib.unified_diff(
+                    pretty_xml1.splitlines(True),
+                    pretty_xml2.splitlines(True), n=2))[2:]
+            raise self.failureException(''.join(diff))
