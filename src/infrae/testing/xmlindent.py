@@ -7,7 +7,10 @@ from optparse import OptionParser
 import sys
 
 def xmlindent():
-    """Indent an xmlfile.
+    """Indent an XML file.
+
+    Can be used in emacs on your buffer with C-x h C-u M-S | path to
+    the script Enter.
     """
     parser = OptionParser()
     (options, files) = parser.parse_args()
