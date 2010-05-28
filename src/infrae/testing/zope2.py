@@ -140,20 +140,25 @@ class Zope2Layer(ZCMLLayer):
     def __init__(self, package, zcml_file='ftesting.zcml',
                  name=None, products=None, packages=None, users=None):
         super(Zope2Layer, self).__init__(package, zcml_file, name)
+
+        # Collect packages, products and users to create/install
         self.products = list(self.default_products)
         if products is not None:
             self.products.extend(products)
         self.packages = list(self.default_packages)
         if packages is not None:
             self.packages.extend(packages)
+        self.users = self.default_users.copy()
+        if users is not None:
+            self.users.update(users)
+
+        # Add to the list to install in Zope the tested package/product
         tested_module = self.__module__
         if tested_module.startswith('Products.'):
             self.products.append(tested_module[9:])
         else:
             self.packages.append(tested_module)
-        self.users = self.default_users.copy()
-        if users is not None:
-            self.users.update(users)
+
         self._transaction_manager = TransactionsManager()
         self._db = None
         self._test_db = None
@@ -185,6 +190,9 @@ class Zope2Layer(ZCMLLayer):
             self._install_zope(self._db)
 
     def _install_zope(self, db):
+        """Install a fresh Zope inside the new test DB. Eventually
+        install an application afterwards.
+        """
         # Create the "application"
         newSecurityManager(None, AccessControl.User.system)
         connection = db.open()
@@ -217,6 +225,11 @@ class Zope2Layer(ZCMLLayer):
             self._test_db, 'Application', OFS.Application.Application, ())
 
     def testTearDown(self):
+        # Logout eventually logged in users
+        noSecurityManager()
+
+        # Close connection and DB. Don't call close on the DB, as it
+        # would close all storages, but we wish to reuse them.
         transaction.abort()
         self._application = None
         self._test_connection.close()
@@ -230,12 +243,20 @@ class Zope2Layer(ZCMLLayer):
         return new_database(base=base)
 
     def get_root_folder(self):
+        """Return root folder contained in the DB.
+        """
         return self._test_connection.root()['Application']
 
     def get_application(self):
+        """Return root folder wrapped inside a test request, which is
+        the same object you have when you are working on a real
+        published request.
+        """
         return makerequest(self.get_root_folder())
 
     def login(self, username):
+        """Login with the user called username.
+        """
         user_folder = self.get_root_folder().acl_users
         user = user_folder.getUserById(username)
         if user is None:
@@ -243,5 +264,7 @@ class Zope2Layer(ZCMLLayer):
         newSecurityManager(None, user.__of__(user_folder))
 
     def logout(self):
+        """Logout eventually logged in user.
+        """
         noSecurityManager()
 
