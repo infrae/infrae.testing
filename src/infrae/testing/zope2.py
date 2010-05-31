@@ -164,6 +164,7 @@ class Zope2Layer(ZCMLLayer):
         self._test_db = None
         self._test_connection = None
         self._application = None
+        self.__logged_in = False
 
     def setUp(self):
         """Setup a Zope 2 Application.
@@ -226,7 +227,7 @@ class Zope2Layer(ZCMLLayer):
 
     def testTearDown(self):
         # Logout eventually logged in users
-        noSecurityManager()
+        self.logout()
 
         # Close connection and DB. Don't call close on the DB, as it
         # would close all storages, but we wish to reuse them.
@@ -257,14 +258,17 @@ class Zope2Layer(ZCMLLayer):
     def login(self, username):
         """Login with the user called username.
         """
+        if self.__logged_in:
+            self.logout()
         user_folder = self.get_root_folder().acl_users
         user = user_folder.getUserById(username)
         if user is None:
             raise ValueError("No user %s available" % username)
         newSecurityManager(None, user.__of__(user_folder))
+        self.__logged_in = True
 
     def logout(self):
         """Logout eventually logged in user.
         """
         noSecurityManager()
-
+        self.__logged_in = False
