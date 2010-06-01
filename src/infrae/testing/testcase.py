@@ -13,6 +13,13 @@ from BeautifulSoup import BeautifulStoneSoup
 from zope.configuration.name import resolve
 
 
+class XMLSoup(BeautifulStoneSoup):
+
+    def _smartPop(self, name):
+        """We don't want to 'clean' the DOM.
+        """
+        pass
+
 
 TEST_FACTORIES = {
     '.txt': doctest.DocFileSuite,
@@ -104,8 +111,8 @@ class TestCase(unittest.TestCase):
         You should not use this if you which to compare XML data where
         spaces does matter.
         """
-        pretty_xml1 = BeautifulStoneSoup(xml1.strip()).prettify()
-        pretty_xml2 = BeautifulStoneSoup(xml2.strip()).prettify()
+        pretty_xml1 = XMLSoup(xml1.strip()).prettify()
+        pretty_xml2 = XMLSoup(xml2.strip()).prettify()
         if pretty_xml1 != pretty_xml2:
             diff = ['XML differ:\n-expected\n+actual\n',] + \
                 list(difflib.unified_diff(
