@@ -10,6 +10,9 @@ import difflib
 
 from Acquisition import aq_base
 from BeautifulSoup import BeautifulStoneSoup
+
+from zope.component.eventtesting import getEvents
+from zope.component.interfaces import IObjectEvent
 from zope.configuration.name import resolve
 
 
@@ -62,9 +65,25 @@ def suite_from_package(package_name, factory):
     return suite
 
 
+def repr_event(event):
+    """Represent an event as a string.
+    """
+    str_event = event.__class__.__name__
+    if IObjectEvent.providedBy(event):
+        # Zope 2 specific ?
+        str_event += ' for ' + '/'.join(event.object.getPhysicalPath())
+    return str_event
+
+
 class TestCase(unittest.TestCase):
     """Add some usefull assert methods to the default Python TestCase.
     """
+
+    def assertEventsAre(self, expected, interface=None):
+        """Asset that trigger events are.
+        """
+        triggered = map(repr_event, getEvents(interface))
+        self.assertListEqual(triggered, expected)
 
     def assertHashEqual(self, first, second, msg=None):
         """Assert the hash values of two strings are the same. It is
