@@ -11,7 +11,7 @@ from Zope2.App.ClassFactory import ClassFactory
 from Zope2.App.startup import TransactionsManager
 from zope.event import notify
 from zope.processlifetime import DatabaseOpened
-from zope.component.eventtesting import clearEvents
+from zope.component.eventtesting import getEvents, clearEvents
 from OFS.Application import get_folder_permissions, get_products
 from OFS.Application import install_product, install_package, AppInitializer
 from OFS.Folder import Folder
@@ -28,6 +28,14 @@ from infrae.testing.layers import ZCMLLayer
 import os
 
 _zope_patched = False
+
+
+def get_event_names():
+    """Return the names of the triggered events.
+    """
+    called = map(lambda e: e.__class__.__name__, getEvents())
+    clearEvents()
+    return called
 
 
 def patch_zope():
