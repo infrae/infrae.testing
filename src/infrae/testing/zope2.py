@@ -15,6 +15,7 @@ from zope.component.eventtesting import getEvents, clearEvents
 from OFS.Application import get_folder_permissions, get_products
 from OFS.Application import install_product, install_package, AppInitializer
 from OFS.Folder import Folder
+from Testing import ZopeTestCase
 from Testing.makerequest import makerequest
 import AccessControl.User
 import App.ZApplication
@@ -24,7 +25,6 @@ import ZODB
 import transaction
 
 from infrae.testing.layers import ZCMLLayer
-
 import os
 
 _zope_patched = False
@@ -109,6 +109,9 @@ class TestAppInitializer(AppInitializer):
             self.commit('Installed test packages.')
             # Installation might have triggered some events. Clear them.
             clearEvents()
+
+    def install_tempfolder_and_sdc(self):
+        ZopeTestCase.utils.setupCoreSessions(self.getApp())
 
     def _install_product(self, name, app):
         """Zope 2 install a given product.
@@ -208,6 +211,8 @@ class Zope2Layer(ZCMLLayer):
         root = connection.root()
         root['Application'] = OFS.Application.Application()
         app = root['Application']
+        # Do a savepoint to get a _p_jar on the application
+        transaction.savepoint()
 
         # Initialize the "application"
         TestAppInitializer(
@@ -232,6 +237,7 @@ class Zope2Layer(ZCMLLayer):
         self._test_connection = self._test_db.open()
         self._application = App.ZApplication.ZApplicationWrapper(
             self._test_db, 'Application', OFS.Application.Application, ())
+        self.get_root_folder().temp_folder.session_data._reset()
 
     def testTearDown(self):
         # Logout eventually logged in users
