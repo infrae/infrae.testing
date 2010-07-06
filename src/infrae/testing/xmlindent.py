@@ -2,9 +2,18 @@
 # See also LICENSE.txt
 # $Id$
 
-from BeautifulSoup import BeautifulSoup
+from BeautifulSoup import BeautifulStoneSoup
 from optparse import OptionParser
 import sys
+
+
+class XMLSoup(BeautifulStoneSoup):
+
+    def _smartPop(self, name):
+        """We don't want to 'clean' the DOM.
+        """
+        pass
+
 
 def xmlindent():
     """Indent an XML file.
@@ -21,9 +30,9 @@ def xmlindent():
         while data:
             input += data
             data = sys.stdin.read()
-        print BeautifulSoup(input).prettify()
+        print XMLSoup(input).prettify()
         return
 
     for filename in files:
         with open(filename, 'r') as input:
-            print BeautifulSoup(input.read()).prettify()
+            print XMLSoup(input.read()).prettify()

@@ -9,19 +9,12 @@ import doctest
 import difflib
 
 from Acquisition import aq_base
-from BeautifulSoup import BeautifulStoneSoup
 
 from zope.component.eventtesting import getEvents
 from zope.component.interfaces import IObjectEvent
 from zope.configuration.name import resolve
 
-
-class XMLSoup(BeautifulStoneSoup):
-
-    def _smartPop(self, name):
-        """We don't want to 'clean' the DOM.
-        """
-        pass
+from infrae.testing.xmlindent import XMLSoup
 
 
 TEST_FACTORIES = {
