@@ -152,10 +152,10 @@ as a ``default_products``, it goes crazy (but include it in your ZCML
 The layer provides you the following useful methods:
 
 ``login(username)``
-   Log as a the given username
+   Log as a the given username.
 
 ``logout()``
-   Logout
+   Logout.
 
 ``get_root_folder()``
    Return the root of the database, *not* wrapped in a request.
