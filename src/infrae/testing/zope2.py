@@ -185,13 +185,14 @@ class Zope2Layer(ZCMLLayer):
         # Load ZCML
         super(Zope2Layer, self).setUp()
 
-        if 'SETUPCACHE' in os.environ:
+        if 'SETUP_CACHE' in os.environ:
             # Create or use an already existing test data.fs
             filename = os.path.join(os.getcwd(), '%s.%s.fs' % (
                     self.__module__, self.__name__.lower()))
             if os.path.exists(filename):
                 self._db = new_database(
                     storage = FileStorage(filename))
+                self._reload_zope(self._db)
             else:
                 self._db = new_database(
                     storage = FileStorage(filename, create=True))
@@ -221,8 +222,21 @@ class Zope2Layer(ZCMLLayer):
 
         # Close
         transaction.commit()
-        noSecurityManager()
         connection.close()
+        noSecurityManager()
+
+    def _reload_zope(self, db):
+        """Need to re-mount/re-setup SESSIONs if we just reload a Zope
+        instance.
+        """
+        newSecurityManager(None, AccessControl.User.system)
+        connection = db.open()
+        root = connection.root()
+        assert 'Application' in root, 'Invalid database'
+        ZopeTestCase.utils.setupCoreSessions(root['Application'])
+        transaction.commit()
+        connection.close()
+        noSecurityManager()
 
     def _install_application(self, app):
         """Install more things in the "application".
