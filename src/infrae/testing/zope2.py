@@ -218,7 +218,8 @@ class Zope2Layer(ZCMLLayer):
         # Initialize the "application"
         TestAppInitializer(
             app, self.products, self.packages, self.users).initialize()
-        self._install_application(makerequest(app))
+        self._install_application(makerequest(
+                app, environ={'SERVER_NAME': 'localhost'}))
 
         # Close
         transaction.commit()
@@ -281,7 +282,8 @@ class Zope2Layer(ZCMLLayer):
         the same object you have when you are working on a real
         published request.
         """
-        return makerequest(self.get_root_folder())
+        return makerequest(
+            self.get_root_folder(), environ={'SERVER_NAME': 'localhost'})
 
     def login(self, username):
         """Login with the user called username.
