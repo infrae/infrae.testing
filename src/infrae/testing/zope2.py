@@ -2,21 +2,20 @@
 # See also LICENSE.txt
 # $Id$
 
+import os
+
 from AccessControl.SecurityManagement import newSecurityManager
 from AccessControl.SecurityManagement import noSecurityManager
 from App.class_init import InitializeClass
-from ZODB.DemoStorage import DemoStorage
-from ZODB.FileStorage import FileStorage
-from Zope2.App.ClassFactory import ClassFactory
-from Zope2.App.startup import TransactionsManager
-from zope.event import notify
-from zope.processlifetime import DatabaseOpened
-from zope.component.eventtesting import getEvents, clearEvents
 from OFS.Application import get_folder_permissions, get_products
 from OFS.Application import install_product, install_package, AppInitializer
 from OFS.Folder import Folder
 from Testing import ZopeTestCase
 from Testing.makerequest import makerequest
+from ZODB.DemoStorage import DemoStorage
+from ZODB.FileStorage import FileStorage
+from Zope2.App.ClassFactory import ClassFactory
+from Zope2.App.startup import TransactionsManager
 import AccessControl.User
 import App.ZApplication
 import OFS.Application
@@ -24,18 +23,13 @@ import Products
 import ZODB
 import transaction
 
-from infrae.testing.layers import ZCMLLayer
-import os
+from zope.event import notify
+from zope.processlifetime import DatabaseOpened
+
+from infrae.testing.layers import ZCMLLayer, clear_events
+
 
 _zope_patched = False
-
-
-def get_event_names():
-    """Return the names of the triggered events.
-    """
-    called = map(lambda e: e.__class__.__name__, getEvents())
-    clearEvents()
-    return called
 
 
 def patch_zope():
@@ -108,7 +102,7 @@ class TestAppInitializer(AppInitializer):
         if self.installed_products or self.installed_packages:
             self.commit('Installed test packages.')
             # Installation might have triggered some events. Clear them.
-            clearEvents()
+            clear_events()
 
     def install_tempfolder_and_sdc(self):
         ZopeTestCase.utils.setupCoreSessions(self.getApp())

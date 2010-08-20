@@ -8,8 +8,60 @@ from zope.configuration import xmlconfig, config
 from zope.testing.cleanup import cleanUp
 from zope.component import provideHandler
 from zope.site.hooks import setHooks
-from zope.component.eventtesting import events, clearEvents
+from zope.component.eventtesting import events
+from zope.component.eventtesting import clearEvents as clear_events
+from zope.component.eventtesting import getEvents as get_events
+from zope.component import getGlobalSiteManager
 from grokcore.component import zcml
+
+
+
+def get_event_names():
+    """Return the names of the triggered events.
+    """
+    called = map(lambda e: e.__class__.__name__, get_events())
+    clear_events()
+    return called
+
+
+class assertTriggersEvents(object):
+    """Context manager that check that some events are triggered.
+    """
+
+    def __init__(self, *names, **opts):
+        self.names = names
+        self.msg = opts.get('msg')
+        self.triggered = []
+
+    def __enter__(self):
+        getGlobalSiteManager().registerHandler(
+            self.triggered.append, (None,))
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        getGlobalSiteManager().unregisterHandler(
+            self.triggered.append, (None,))
+        self.verify(map(lambda e: e.__class__.__name__,  self.triggered))
+
+    def verify(self, triggered):
+        for name in self.names:
+            msg = self.msg
+            if msg is None:
+                msg = "block didn't trigger event %s, got %s" % (
+                    name, ', '.join(triggered))
+            assert name in triggered, msg
+
+
+class assertNotTriggersEvents(assertTriggersEvents):
+    """Context manager that check that events are not triggered.
+    """
+
+    def verify(self, triggered):
+        for name in self.names:
+            msg = self.msg
+            if msg is None:
+                msg = "block triggered event %s, got %s" % (
+                    name, ', '.join(triggered))
+            assert name not in triggered, msg
 
 
 class LayerBase(object):
@@ -51,7 +103,7 @@ class ZCMLLayer(LayerBase):
         # Previous test layer might be buggy and have left things
         # behind, so clear everything ourselves before doing setup
         # (like ZopeLite)
-        clearEvents()
+        clear_events()
         cleanUp()
 
         # Set up this test layer.
@@ -69,7 +121,7 @@ class ZCMLLayer(LayerBase):
             del self.context.actions[:]
 
     def testTearDown(self):
-        clearEvents()
+        clear_events()
 
     def tearDown(self):
         cleanUp()
@@ -79,4 +131,3 @@ class ZCMLLayer(LayerBase):
             self.zcml_file,
             package=self.package,
             context=context, execute=True)
-
