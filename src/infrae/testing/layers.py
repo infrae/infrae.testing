@@ -40,7 +40,8 @@ class assertTriggersEvents(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         getGlobalSiteManager().unregisterHandler(
             self.triggered.append, (None,))
-        self.verify(map(lambda e: e.__class__.__name__,  self.triggered))
+        if exc_type is None and exc_val is None and exc_tb is None:
+            self.verify(map(lambda e: e.__class__.__name__,  self.triggered))
 
     def verify(self, triggered):
         for name in self.names:
