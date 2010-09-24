@@ -252,12 +252,12 @@ class Zope2Layer(ZCMLLayer):
         # Logout eventually logged in users
         self.logout()
 
-        # Close connection and DB. Don't call close on the DB, as it
-        # would close all storages, but we wish to reuse them.
+        # Close connection and DB
         transaction.abort()
         self._application = None
         self._test_connection.close()
         self._test_connection = None
+        self._test_db.close()
         self._test_db = None
         super(Zope2Layer, self).testTearDown()
 
