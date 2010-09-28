@@ -257,7 +257,6 @@ class Zope2Layer(ZCMLLayer):
         self._application = None
         self._test_connection.close()
         self._test_connection = None
-        self._test_db.close()
         self._test_db = None
         super(Zope2Layer, self).testTearDown()
 
