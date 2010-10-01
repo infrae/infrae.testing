@@ -9,6 +9,7 @@ import doctest
 import difflib
 
 from Acquisition import aq_base
+from OFS.interfaces import ITraversable
 
 from zope.component.eventtesting import getEvents
 from zope.component.interfaces import IObjectEvent
@@ -63,8 +64,8 @@ def repr_event(event):
     """
     str_event = event.__class__.__name__
     if IObjectEvent.providedBy(event):
-        # Zope 2 specific ?
-        str_event += ' for ' + '/'.join(event.object.getPhysicalPath())
+        if ITraversable.providedBy(event.object):
+            str_event += ' for ' + '/'.join(event.object.getPhysicalPath())
     return str_event
 
 
