@@ -77,6 +77,10 @@ It defines:
   events triggered in the layer since *the last time* you called it,
   or the test started.
 
+- Two context managers: ``assertNotTriggersEvents`` and
+  ``assertTriggersEvents`` that verify that the given block triggers
+  (or not) the given events (specified by their names).
+
 - The ``suite_from_package`` function will construct a
   ``unittest.TestSuite`` out of files found in a package. A ``*.txt``
   file will create ``DocFileSuite``, and a ``*.py`` will create a
