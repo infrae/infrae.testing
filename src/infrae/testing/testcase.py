@@ -77,7 +77,7 @@ class TestCase(unittest.TestCase):
         """Asset that trigger events are.
         """
         triggered = map(repr_event, getEvents(interface))
-        self.assertListEqual(triggered, expected)
+        self.assertItemsEqual(triggered, expected)
 
     def assertHashEqual(self, first, second, msg=None):
         """Assert the hash values of two strings are the same. It is
@@ -103,19 +103,6 @@ class TestCase(unittest.TestCase):
         around them.
         """
         self.assertEqual(first.strip(), second.strip(), msg)
-
-    def assertListEqual(self, first, second, msg=None):
-        """Assert that the list first and second contains the same
-        object, without paying attention to the order of the
-        elements. If the condition is not satisfied, the test will
-        fail with the given msg if not None.
-        """
-        sorted_first = sorted(list(first))
-        sorted_second = sorted(list(second))
-        if msg is None:
-            msg = u'%r != %s' % (sorted_first, sorted_second)
-        if not sorted_first == sorted_second:
-            raise self.failureException(msg)
 
     def assertXMLEqual(self, xml1, xml2):
         """Assert that two XML content are the same, or fail with a

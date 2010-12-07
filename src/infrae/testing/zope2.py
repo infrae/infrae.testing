@@ -210,15 +210,24 @@ class Zope2Layer(ZCMLLayer):
         transaction.savepoint()
 
         # Initialize the "application"
-        TestAppInitializer(
-            app, self.products, self.packages, self.users).initialize()
-        self._install_application(makerequest(
-                app, environ={'SERVER_NAME': 'localhost'}))
-
-        # Close
-        transaction.commit()
-        connection.close()
-        noSecurityManager()
+        try:
+            TestAppInitializer(
+                app, self.products, self.packages, self.users).initialize()
+            self._install_application(makerequest(
+                    app, environ={'SERVER_NAME': 'localhost'}))
+        except Exception as error:
+            # There was an error during the application 'setUp'. Abort
+            # the transaction and continue, otherwise test in other
+            # layers might fail because of this failure.
+            transaction.abort()
+            raise error
+        else:
+            # Close
+            transaction.commit()
+        finally:
+            # In any case, close the connection and continue
+            connection.close()
+            noSecurityManager()
 
     def _reload_zope(self, db):
         """Need to re-mount/re-setup SESSIONs if we just reload a Zope
