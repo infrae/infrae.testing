@@ -8,6 +8,7 @@ from AccessControl.SecurityManagement import newSecurityManager
 from AccessControl.SecurityManagement import noSecurityManager
 from App.class_init import InitializeClass
 from OFS.Application import get_folder_permissions, get_products
+from OFS.metaconfigure import get_packages_to_initialize
 from OFS.Application import install_product, install_package, AppInitializer
 from OFS.Folder import Folder
 from Testing import ZopeTestCase
@@ -126,12 +127,10 @@ class TestAppInitializer(AppInitializer):
         """Zope 2 install a given package.
         """
         if name not in self.installed_packages:
-            for module, init_func in getattr(
-                Products, '_packages_to_initialize', []):
+            for module, init_func in get_packages_to_initialize():
                 if module.__name__ == name:
                     install_package(app, module, init_func, raise_exc=1)
                     self.installed_packages.append(name)
-                    Products._packages_to_initialize.remove((module, init_func))
                     break
 
 
