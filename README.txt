@@ -167,4 +167,11 @@ The layer provides you the following useful methods:
 ``get_application()``
    Return the root of the database, wrapped in a request.
 
+Code
+====
+
+The code is available through a Mercurial repository at:
+https://hg.infrae.com/infrae.testing
+
+
 .. _zope.testing: http://pypi.python.org/pypi/zope.testing

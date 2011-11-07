@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 import os
 
-version = '1.2dev'
+version = '1.2'
 
 setup(name='infrae.testing',
       version=version,
-      description="Define some sane tests layers",
+      description="Define some sane tests layers in Zope 2",
       long_description=open("README.txt").read() + "\n" +
                        open(os.path.join("docs", "HISTORY.txt")).read(),
       classifiers=[
