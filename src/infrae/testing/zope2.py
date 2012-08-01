@@ -27,8 +27,8 @@ import transaction
 from zope.event import notify
 from zope.processlifetime import DatabaseOpened
 
-from infrae.testing.layers import ZCMLLayer, clear_events
-
+from .layers import ZCMLLayer
+from .events import clear_events
 
 _zope_patched = False
 

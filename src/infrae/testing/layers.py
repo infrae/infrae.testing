@@ -4,65 +4,42 @@
 
 import os.path
 
-from zope.configuration import xmlconfig, config
-from zope.testing.cleanup import cleanUp
-from zope.component import provideHandler
-from zope.site.hooks import setHooks
-from zope.component.eventtesting import events
-from zope.component.eventtesting import clearEvents as clear_events
-from zope.component.eventtesting import getEvents as get_events
-from zope.component import getGlobalSiteManager
 from grokcore.component import zcml
+from zope.component import provideHandler
+from zope.component.eventtesting import events
+from zope.configuration import xmlconfig, config
+from zope.site.hooks import setSite, setHooks
+import zope.testing.cleanup
+
+from .events import clear_events
+
+class CleanUpCallbacks(object):
+
+    def __init__(self):
+        self._callbacks = []
+
+    def add(self, callback):
+        self._callbacks.append(callback)
+
+    def __call__(self):
+        for callback in self._callbacks:
+            callback()
+
+    def clear(self):
+        self._callbacks = []
 
 
-
-def get_event_names():
-    """Return the names of the triggered events.
-    """
-    called = map(lambda e: e.__class__.__name__, get_events())
-    clear_events()
-    return called
+def clear_site():
+    setSite(None)
+    setHooks()
 
 
-class assertTriggersEvents(object):
-    """Context manager that check that some events are triggered.
-    """
-
-    def __init__(self, *names, **opts):
-        self.names = names
-        self.msg = opts.get('msg')
-        self.triggered = []
-
-    def __enter__(self):
-        getGlobalSiteManager().registerHandler(
-            self.triggered.append, (None,))
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        getGlobalSiteManager().unregisterHandler(
-            self.triggered.append, (None,))
-        if exc_type is None and exc_val is None and exc_tb is None:
-            self.verify(map(lambda e: e.__class__.__name__,  self.triggered))
-
-    def verify(self, triggered):
-        for name in self.names:
-            msg = self.msg
-            if msg is None:
-                msg = "block didn't trigger event %s, got %s" % (
-                    name, ', '.join(triggered))
-            assert name in triggered, msg
-
-
-class assertNotTriggersEvents(assertTriggersEvents):
-    """Context manager that check that events are not triggered.
-    """
-
-    def verify(self, triggered):
-        for name in self.names:
-            msg = self.msg
-            if msg is None:
-                msg = "block triggered event %s, got %s" % (
-                    name, ', '.join(triggered))
-            assert name not in triggered, msg
+layerCleanUp = CleanUpCallbacks()
+layerCleanUp.add(clear_events)
+layerCleanUp.add(zope.testing.cleanup.cleanUp)
+testCleanUp = CleanUpCallbacks()
+testCleanUp.add(clear_events)
+testCleanUp.add(clear_site)
 
 
 class LayerBase(object):
@@ -104,11 +81,9 @@ class ZCMLLayer(LayerBase):
         # Previous test layer might be buggy and have left things
         # behind, so clear everything ourselves before doing setup
         # (like ZopeLite)
-        clear_events()
-        cleanUp()
+        layerCleanUp()
 
         # Set up this test layer.
-        setHooks()
         context = config.ConfigurationMachine()
         xmlconfig.registerCommonDirectives(context)
         self.context = self._load_zcml(context)
@@ -122,10 +97,10 @@ class ZCMLLayer(LayerBase):
             del self.context.actions[:]
 
     def testTearDown(self):
-        clear_events()
+        testCleanUp()
 
     def tearDown(self):
-        cleanUp()
+        layerCleanUp()
 
     def _load_zcml(self, context):
         return xmlconfig.file(
