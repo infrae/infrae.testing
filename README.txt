@@ -86,6 +86,20 @@ It defines:
   file will create ``DocFileSuite``, and a ``*.py`` will create a
   ``DocTestSuite``.
 
+If you use the ``ZCMLLayer`` or ``Zope2Layer``, you have two different
+callbacks registry you can use:
+
+- ``testCleanUp`` that is called after each test,
+
+- ``layerCleanUp`` that is called after each layer.
+
+Those callbacks registry have an ``add`` method that can be used in
+order to register a new cleanup function::
+
+   from infrae.testing import testCleanUp
+
+   testCleanUp.add(my_cleanup_function)
+
 
 Examples
 ========
