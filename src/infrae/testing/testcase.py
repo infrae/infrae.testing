@@ -9,15 +9,11 @@ import doctest
 import difflib
 
 from Acquisition import aq_base
-from OFS.interfaces import ITraversable
-
-from zope.component.eventtesting import getEvents
-from zope.component.interfaces import IObjectEvent
 from zope.configuration.name import resolve
 
 from infrae.testing.xmlindent import XMLSoup
 
-from . import events
+from . import events, testmethods
 
 
 TEST_FACTORIES = {
@@ -61,10 +57,7 @@ def suite_from_package(package_name, factory):
     return suite
 
 
-class TestCase(unittest.TestCase):
-    """Add some usefull assert methods to the default Python TestCase,
-    to test Zope related code.
-    """
+class ZopeTestMethods(object):
 
     def assertTriggersEvents(self, msg=None, *expected):
         """Verify that some events are triggered.
@@ -134,3 +127,15 @@ class TestCase(unittest.TestCase):
                     pretty_xml1.splitlines(True),
                     pretty_xml2.splitlines(True), n=2))[2:]
             raise self.fail(''.join(diff))
+
+
+class TestMethods(ZopeTestMethods, testmethods.TestMethods):
+    """TestCase assert methods that can be used without a TestCase.
+    """
+
+
+class TestCase(ZopeTestMethods, unittest.TestCase):
+    """Add some usefull assert methods to the default Python TestCase,
+    to test Zope related code.
+    """
+
