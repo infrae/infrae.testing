@@ -17,6 +17,8 @@ from zope.configuration.name import resolve
 
 from infrae.testing.xmlindent import XMLSoup
 
+from . import events
+
 
 TEST_FACTORIES = {
     '.txt': doctest.DocFileSuite,
@@ -59,25 +61,29 @@ def suite_from_package(package_name, factory):
     return suite
 
 
-def repr_event(event):
-    """Represent an event as a string.
-    """
-    str_event = event.__class__.__name__
-    if IObjectEvent.providedBy(event):
-        if ITraversable.providedBy(event.object):
-            str_event += ' for ' + '/'.join(event.object.getPhysicalPath())
-    return str_event
-
-
 class TestCase(unittest.TestCase):
-    """Add some usefull assert methods to the default Python TestCase.
+    """Add some usefull assert methods to the default Python TestCase,
+    to test Zope related code.
     """
+
+    def assertTriggersEvents(self, msg=None, *expected):
+        """Verify that some events are triggered.
+        """
+        return events.assertTriggersEvents(
+            *expected, msg=None, testcase=self)
+
+    def assertNotTriggersEvents(self, msg=None, *expected):
+        """Verify that some events are not triggered.
+        """
+        return events.assertNotTriggersEvents(
+            *expected, msg=None, testcase=self)
 
     def assertEventsAre(self, expected, interface=None):
         """Asset that trigger events are.
         """
-        triggered = map(repr_event, getEvents(interface))
-        self.assertItemsEqual(triggered, expected)
+        self.assertItemsEqual(
+            events.get_event_names(interface=interface, object_type=True),
+            expected)
 
     def assertHashEqual(self, first, second, msg=None):
         """Assert the hash values of two strings are the same. It is
@@ -86,9 +92,9 @@ class TestCase(unittest.TestCase):
         hash_first = hashlib.md5(first)
         hash_second = hashlib.md5(second)
         msg = msg or 'string hashes are different.'
-        self.assertEquals(hash_first.hexdigest(), hash_second.hexdigest(), msg)
+        self.assertEqual(hash_first.hexdigest(), hash_second.hexdigest(), msg)
 
-    def assertSame(self, first, second, msg=None):
+    def assertContentEqual(self, first, second, msg=None):
         """Assert that first is the same same object than second,
         Acquisition wrapper removed. If the condition is not
         satisfied, the test will fail with the given msg if not None.
@@ -96,7 +102,16 @@ class TestCase(unittest.TestCase):
         if msg is None:
             msg = u'%r is not %r' % (first, second)
         if aq_base(first) is not aq_base(second):
-            raise self.failureException(msg)
+            raise self.fail(msg)
+
+    def assertContentItemsEqual(self, first, second, msg=None):
+        """Assert that a sequence of content equals a second one.
+        """
+        # Using directly assertItemsEqual, except under Linux ...
+        self.assertSequenceEqual(
+            sorted(first, key=lambda c: c._p_oid),
+            sorted(second, key=lambda c: c._p_oid),
+            msg=msg)
 
     def assertStringEqual(self, first, second, msg=None):
         """Assert two string are equals ignore extra white spaces
@@ -118,4 +133,4 @@ class TestCase(unittest.TestCase):
                 list(difflib.unified_diff(
                     pretty_xml1.splitlines(True),
                     pretty_xml2.splitlines(True), n=2))[2:]
-            raise self.failureException(''.join(diff))
+            raise self.fail(''.join(diff))
