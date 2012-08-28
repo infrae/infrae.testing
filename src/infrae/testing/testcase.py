@@ -19,6 +19,8 @@ from . import events, testmethods
 TEST_FACTORIES = {
     '.txt': doctest.DocFileSuite,
     '.py': doctest.DocTestSuite,}
+TEST_OPTIONS = {
+    '.txt': {'module_relative': False}}
 
 
 def suite_from_package(package_name, factory):
@@ -40,19 +42,19 @@ def suite_from_package(package_name, factory):
         if name.endswith('_fixture') or name == '__init__':
             continue
 
-        doc_suite_factory = TEST_FACTORIES[extension]
-        default_doc_suite_options = {}
-        if doc_suite_factory is doctest.DocFileSuite:
-            test_name = os.path.join(testing_path, filename)
-            default_doc_suite_options['module_relative'] = False
-        else:
+        suite_factory = TEST_FACTORIES[extension]
+        suite_options = {}
+        suite_options.update(TEST_OPTIONS.get(extension, {}))
+        if suite_factory is doctest.DocTestSuite:
             test_name = '.'.join((package_name, name))
+        else:
+            test_name = os.path.join(testing_path, filename)
 
-        def build_doc_suite(*files, **options):
-            options.update(default_doc_suite_options)
-            return doc_suite_factory(*files, **options)
+        def build_suite(*files, **options):
+            options.update(suite_options)
+            return suite_factory(*files, **options)
 
-        test = factory(build_doc_suite, test_name)
+        test = factory(build_suite, test_name)
         suite.addTest(test)
     return suite
 
