@@ -41,20 +41,33 @@ It defines:
 
 - A TestCase base class that provides a bit more of assert methods:
 
+  ``assertTriggersEvents(*events)``
+      Context manager that will assert that the events with the given
+      names have been triggered.
+
+  ``assertNotTriggersEvents(*events)``
+      Context manager that will assert that the events with the given
+      names have not been triggered.
+
+  ``assertEventsAre(events, interface=None)``
+      Will assert that the event tiggered up until now are the one
+      with the names in the given list. You can if you want restrict
+      those events to the one implementing the given interface.
+
+  ``assertContentEqual(c1, c2)``
+      Will assert that both Zope object are the same.
+
+  ``assertContentItemsEqual(l1, l2)``
+      Will assert that both list contains the same Zope objects. The
+      order is not important.
+
   ``assertHashEqual(s1, s2)``
       Will assert that both md5 hash of the given string are
       equal. This is useful when comparing two large string, and that
       you wish to have readable output error message.
 
-  ``assertSame(a1, a2)``
-      Will assert that the first argument *is* the second argument.
-
   ``assertStringEqual(s1, s2)``
       Will assert that stripped version of both given strings are the same.
-
-  ``assertListEqual(l1, l2)``
-      Will assert that both given list contains the same values (equal
-      tests) in-depending of the order of those.
 
   ``assertEventsAre(events, interface=None)``
       Will assert that the triggered events are the ones whose names
@@ -73,18 +86,15 @@ It defines:
       that indent the XML code exactly like the ``assertXMLEqual``
       method does.
 
-- The ``get_event_names`` function will return you the names of the
-  events triggered in the layer since *the last time* you called it,
-  or the test started.
-
-- Two context managers: ``assertNotTriggersEvents`` and
-  ``assertTriggersEvents`` that verify that the given block triggers
-  (or not) the given events (specified by their names).
+- A ``TestMethods`` class that will provide you access to the assert
+  methods without the need of a test case. This gives you access to
+  all the default assert methods of the ``unittest.TestCase`` and the
+  ones documented above.
 
 - The ``suite_from_package`` function will construct a
   ``unittest.TestSuite`` out of files found in a package. A ``*.txt``
   file will create ``DocFileSuite``, and a ``*.py`` will create a
-  ``DocTestSuite``.
+  ``DocTestSuite``. Other type of test files can be plugged in.
 
 If you use the ``ZCMLLayer`` or ``Zope2Layer``, you have two different
 callbacks registry you can use:
