@@ -194,8 +194,8 @@ The layer provides you the following useful methods:
 Code
 ====
 
-The code is available through a Mercurial repository at:
-https://hg.infrae.com/infrae.testing
+The code is available through a Git repository at:
+https://github.com/infrae/infrae.testing
 
 
 .. _zope.testing: http://pypi.python.org/pypi/zope.testing
